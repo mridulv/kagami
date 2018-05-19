@@ -5,7 +5,6 @@ import com.miuv.kafka.KafkaConsumerConfig
 import com.miuv.core.partitioner.Partitioning.Token
 import com.miuv.core.snapshot.SnapshotMetadata
 
-import scala.collection.mutable
 import scala.util.Random
 
 class ReplicatorKafkaIntermediate(token: Token,
@@ -31,14 +30,14 @@ class ReplicatorKafkaIntermediate(token: Token,
 
   def setup(): Unit = {
     val kafkaConsumerConfig = createKafkaConsumerConfig()
-    replicatorClient.loadSnapshot(token, snapshotMetadata.path.get)
+    snapshotMetadata.path.foreach(replicatorClient.loadSnapshot(token, _))
     // Replicate the state of the consumer in case of already existing tokens for consumers when node has become unavailable
     kafkaConsumer = new KafkaConsumer(kafkaConsumerConfig, this)
     kafkaConsumer.start()
   }
 
   override def notify(pub: KafkaConsumer.Publisher, event: Array[Byte]): Unit = {
-    val payload = replicatorClient.deserializeRequest(token, event.map(_.toByte).toArray)
+    val payload = replicatorClient.deserializeRequest(token, event)
     replicatorClient.makeRequest(token, payload)
   }
 }

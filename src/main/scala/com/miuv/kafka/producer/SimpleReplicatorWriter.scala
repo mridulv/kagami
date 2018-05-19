@@ -11,7 +11,8 @@ class SimpleReplicatorWriter(tokenAssigner: TokenAssigner,
                              override protected val zookeeperPartitioningStore: ZookeeperPartitioningStore)
   extends ReplicatorWriter {
 
-  override def add(token: Token, numReplication: Int = 2): Unit = {
+  override def add(token: Token, numReplication: Int = 2): KafkaWriterIntermediate = {
+    // Note: Improve this method , we cannot expose the KafkaWriterIntermediate to the outer world
     tokenAssigner.addToken(token, numReplication)
     new KafkaWriterIntermediate(createKafkaProducer(token))
   }

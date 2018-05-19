@@ -3,7 +3,7 @@ package com.miuv.curator
 import java.util.concurrent.Executors
 
 import com.miuv.core.partitioner.LeaderPartitioner
-import com.miuv.util.{StartStoppable, ZookeeperSequentialNode}
+import com.miuv.util.{Logging, StartStoppable, ZookeeperSequentialNode}
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.recipes.cache.PathChildrenCache
 import org.apache.curator.framework.state.{ConnectionState, ConnectionStateListener}
@@ -32,9 +32,6 @@ class LeaderElection(curator: CuratorFramework,
   private var childrenCache: Option[PathChildrenCache] = None
 
   private val childrenUpdateLock = new Object
-  private val startStopLock = new Object
-
-  private var firstStart = true
   private var zkChildPath: String = null
   @volatile private var running: Boolean = false
 
@@ -226,7 +223,7 @@ class LeaderElection(curator: CuratorFramework,
 }
 
 object LeaderElection {
-  lazy val basePath = s"/basepath/leader/"
+  lazy val basePath = s"/basepath/leader"
 
   def isLeader(nodeId: NodeId, nodes: Seq[String]) = {
     val sortedChildren = nodes.map(new ZookeeperSequentialNode(_)).sortBy(_.sequenceId)

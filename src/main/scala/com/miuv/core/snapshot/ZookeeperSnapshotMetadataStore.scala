@@ -2,7 +2,7 @@ package com.miuv.core.snapshot
 
 import com.miuv.core.{Encoder, ZookeeperStore}
 import com.miuv.core.partitioner.ZookeeperLockUtil
-import com.miuv.curator.Logging
+import com.miuv.util.Logging
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.recipes.cache.NodeCache
 import org.apache.zookeeper.CreateMode

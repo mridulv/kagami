@@ -3,9 +3,10 @@ package com.miuv.core
 import com.miuv.core.partitioner.Partitioning.{Target, Token}
 import com.miuv.core.partitioner.ZookeeperPartitioningStore
 import com.miuv.kafka.consumer.{ReplicatorClient, TokenNotFoundException}
+import com.miuv.kafka.producer.KafkaWriterIntermediate
 
 trait ReplicatorWriter extends BasicReplicator {
-  def add(token: Token, numReplication: Int): Unit
+  def add(token: Token, numReplication: Int): KafkaWriterIntermediate
 }
 
 trait ReplicatorReader extends BasicReplicator {
