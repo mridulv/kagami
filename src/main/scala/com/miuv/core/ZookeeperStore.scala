@@ -1,6 +1,6 @@
 package com.miuv.core
 
-import com.miuv.curator.Logging
+import com.miuv.util.Logging
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.recipes.cache.NodeCache
 import org.apache.zookeeper.CreateMode
@@ -12,7 +12,7 @@ trait ZookeeperStore[T] extends Logging {
   val path: String
   val defaultEntry: T
 
-  protected val nodeCache: NodeCache = {
+  protected lazy val nodeCache: NodeCache = {
     val cache = new NodeCache(curatorFramework, path)
     cache.start()
     cache

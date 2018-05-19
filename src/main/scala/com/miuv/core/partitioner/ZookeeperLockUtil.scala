@@ -7,7 +7,7 @@ trait ZookeeperLockUtil {
 
   val curatorFramework: CuratorFramework
   val lockPath: String
-  val lock = new InterProcessMutex(curatorFramework, lockPath)
+  lazy val lock = new InterProcessMutex(curatorFramework, lockPath)
 
   def withLock[T](fn: => T): T = {
     lock.acquire()
