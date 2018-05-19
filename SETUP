@@ -1,0 +1,11 @@
+Starting up Zookeeper
+------------------------------------------------------------------------------------------------------------
+sudo apt-get install zookeeperd
+sudo service zookeeper start
+
+Starting up Kafka Service
+------------------------------------------------------------------------------------------------------------
+wget http://www-us.apache.org/dist/kafka/1.0.1/kafka_2.12-1.0.1.tgz
+sudo tar -xvf kafka_2.12-1.0.1.tgz -C /opt/
+cd /opt/ && sudo mv kafka_2.12-1.0.1 kafka
+sudo nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /dev/null 2>&1 &
