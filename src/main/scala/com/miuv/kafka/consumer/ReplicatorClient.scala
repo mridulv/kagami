@@ -8,10 +8,11 @@ trait Snapshotter {
   def loadSnapshot(token: Token, path: String): Unit
 }
 
-trait ReplicatorClient extends Snapshotter {
+// Revisit whether it should be a trait or an abstract class
+abstract class ReplicatorClient(kagamiFramework: KagamiFramework) extends Snapshotter {
 
-  val kagamiFramework: KagamiFramework
+  type T
   kagamiFramework.startConsumingRequests(this)
-  def makeRequest[T](token: Token, request: T)
-  def deserializeRequest[T](token: Token, request: Array[Byte]): T
+  def makeRequest(token: Token, request: T)
+  def deserializeRequest(token: Token, request: Array[Byte]): T
 }
