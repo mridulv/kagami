@@ -14,17 +14,21 @@ class ReplicatorKafkaIntermediate(token: Token,
   extends KafkaConsumer.Subscriber {
 
   var kafkaConsumer: KafkaConsumer = _
-  var consumerGroup: String = snapshotMetadata.consumer.getOrElse(Random.nextString(10))
+  // Note(mridul, 2018-05-22) - This should ideally be a consumer for which we had stopped consuming, so that it does
+  // not hinders the consumption of already existing consumers
+  var consumerGroup: String = Random.nextString(10)
 
   private def createKafkaConsumerConfig(): KafkaConsumerConfig = {
     new KafkaConsumerConfig(topic = "random1", consumerGroup = consumerGroup, kafkaConnectString = kafkaConfig.kafkaConnectionString)
   }
 
   def takeSnapshot(): SnapshotMetadata = {
-    kafkaConsumer.start()
+    // Note(mridul, 2018-05-22) - This should be ensureStop, so that the thread gets blocked to make sure consumer
+    // has stopped
+    kafkaConsumer.stop()
     val offset = kafkaConsumer.getOffset()
     val path = replicatorClient.takeSnapshot(token)
-    kafkaConsumer.stop()
+    kafkaConsumer.start()
     SnapshotMetadata(Some(path), offset, Some(consumerGroup))
   }
 

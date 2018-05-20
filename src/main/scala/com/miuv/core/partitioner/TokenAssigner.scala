@@ -1,6 +1,5 @@
 package com.miuv.core.partitioner
 
-
 import Partitioning.{Target, Token}
 import TokenAssigner._
 import com.miuv.curator.NodeId

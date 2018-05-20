@@ -1,5 +1,5 @@
 package com.miuv.core.partitioner
 
-class SimplePartitionerListenerTest {
+class LeaderElectionTest {
 
 }

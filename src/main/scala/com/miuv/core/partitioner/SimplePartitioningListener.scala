@@ -22,7 +22,7 @@ class SimplePartitioningListener(nodeId: NodeId,
       val tokensYetToBeMapped = tokensToBeReplicated.filterNot(tokensAlreadyPresent.contains)
       simpleReplicatorReader.updateTokensForReplication(tokensYetToBeMapped)
       tokensYetToBeMapped.foreach(tokensAlreadyPresent.add)
-      val tokensForSnapshot = partitioning.partitioning.filter(_._2.snapshotReplica.contains(nodeId.nodeName)).keys.toSeq
+      partitioning.partitioning.filter(_._2.snapshotReplica.contains(nodeId.nodeName)).keys.toSeq
     }
   }
 }

@@ -30,26 +30,8 @@ class KafkaProducer(kafkaProducerConfig: KafkaProducerConfig)
     props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy")
   }
 
-  @throws[Exception]
-  def runProducer(sendMessageCount: Int): Unit = {
-    val time = System.currentTimeMillis
-    try {
-      var index = time
-      while (index < time + sendMessageCount) {
-        val record = new ProducerRecord[Long, Array[Byte]](TOPIC, index, ("Hello Mom " + index).map(_.toByte).toArray)
-        val metadata = producer.send(record).get
-        val elapsedTime = System.currentTimeMillis - time
-        print("sent record(key=%s value=%s) " + "meta(partition=%d, offset=%d) time=%d\n", record.key, record.value, metadata.partition, metadata.offset, elapsedTime)
-        index += 1
-      }
-    } finally {
-      producer.flush()
-      producer.close()
-    }
-  }
-
   override def notify(pub: KafkaProducer.Publisher, event: Array[Byte]): Unit = {
-    val record = new ProducerRecord[Long, Array[Byte]](TOPIC, index, ("Hello Mom " + index).map(_.toByte).toArray)
+    val record = new ProducerRecord[Long, Array[Byte]](TOPIC, index, event)
     val metadata = producer.send(record).get
     print("sent record(key=%s value=%s) " + "meta(partition=%d, offset=%d)\n", record.key, record.value, metadata.partition, metadata.offset)
   }
