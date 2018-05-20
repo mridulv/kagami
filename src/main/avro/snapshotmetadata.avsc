@@ -1,0 +1,42 @@
+[
+{
+    "namespace": "com.miuv.core.snapshot",
+    "type": "record",
+    "name": "AvroSnapshotMetadata",
+    "fields": [
+        {
+            "name": "offset",
+            "type": "long"
+        },
+        {
+            "name": "path",
+            "type": ["string", "null"]
+        },
+        {
+            "name": "consumer",
+            "type": ["string", "null"]
+        }
+    ]
+},
+{
+    "type": "record",
+    "namespace": "com.miuv.core.snapshot",
+    "name": "AvroSnapshotMetadataMapping",
+    "fields": [
+        {
+            "name": "tokens",
+            "type": {
+                            "type": "array",
+                            "items": "string"
+                    }
+        },
+        {
+            "name": "snapshotMetadata",
+            "type": {
+                            "type": "array",
+                            "items": "com.miuv.core.snapshot.AvroSnapshotMetadata"
+                    }
+        }
+    ]
+}
+]

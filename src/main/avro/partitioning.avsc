@@ -1,0 +1,49 @@
+[
+{
+    "namespace": "com.miuv.core.partitioner",
+    "type": "record",
+    "name": "AvroTokenMetadata",
+    "fields": [
+        {
+            "name": "replication",
+            "type": "int"
+        },
+        {
+            "name": "primarytarget",
+            "type": ["string", "null"]
+        },
+        {
+            "name": "snapshottarget",
+            "type": ["string", "null"]
+        },
+        {
+            "name": "secondaryTargets",
+            "type": {
+                            "type": "array",
+                            "items": "string"
+                    }
+        }
+    ]
+},
+{
+    "type": "record",
+    "namespace": "com.miuv.core.partitioner",
+    "name": "AvroPartitioning",
+    "fields": [
+        {
+            "name": "tokens",
+            "type": {
+                            "type": "array",
+                            "items": "string"
+                    }
+        },
+        {
+            "name": "tokenMetadatas",
+            "type": {
+                            "type": "array",
+                            "items": "com.miuv.core.partitioner.AvroTokenMetadata"
+                    }
+        }
+    ]
+}
+]
