@@ -16,7 +16,7 @@ class ZookeeperPartitioningStore(override val curatorFramework: CuratorFramework
     nodeCache.getListenable.addListener(new NodeCacheListener {
       override def nodeChanged(): Unit = {
         withLock({
-          partitioningListener.notify(load())
+          partitioningListener.notifyListener(load())
         })
       }
     })
