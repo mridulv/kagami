@@ -13,7 +13,7 @@ class LeaderPartitioner(zookeeperPartitioningStore: ZookeeperPartitioningStore)
   def doPartition(currentTargets: Seq[String]): Unit = {
     withLock({
       val currentPartitioning = zookeeperPartitioningStore.load()
-      val underReplicatedTokens = findUnderReplicatedPartition(currentPartitioning, currentTargets)
+      val underReplicatedTokens = findUnderReplicatedTokens(currentPartitioning, currentTargets)
       underReplicatedTokens.foreach(replicateUnderReplicatedToken(_, currentPartitioning))
       zookeeperPartitioningStore.store(currentPartitioning)
     })

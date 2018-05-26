@@ -33,10 +33,7 @@ object TokenAssigner {
     eligibleTargets.toSeq.minBy(_._2.size)._1
   }
 
-  private[partitioner] def findUnderReplicatedPartition(partitioning: Partitioning, currentTargets: Seq[Target]): Seq[Token] = {
-    val targets = partitioning.inversePartitioning().keys.toSet
-    val diffTargets = targets.filterNot(currentTargets.contains).toSeq
-    diffTargets.foreach(partitioning.removeTargetFromPartitioning)
+  private[partitioner] def findUnderReplicatedTokens(partitioning: Partitioning, currentTargets: Seq[Target]): Seq[Token] = {
     partitioning.partitioning.filter(token => token._2.replication > token._2.secondaryTargets.length).keys.toSeq
   }
 }
