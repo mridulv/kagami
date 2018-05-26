@@ -10,22 +10,22 @@ import com.miuv.util.ClientState.ClientState
 
 import scala.collection.mutable
 
-class SimpleReplicatorReader(connectionConfig: ConnectionConfig,
-                             val zookeeperPartitioningStore: ZookeeperPartitioningStore,
+class SimpleReplicatorReader(val zookeeperPartitioningStore: ZookeeperPartitioningStore,
                              val zookeeperSnapshotMetadataStore: ZookeeperSnapshotMetadataStore)
   extends ReplicatorReader with StartStoppable {
 
   private var continue: Boolean = true
   private var clientState: ClientState = ClientState.NotStarted
-  private var replicatorClient: ReplicatorClient = _
+  private var replicatorKafkaIntermediateFactory: ReplicatorKafkaIntermediateFactory = _
 
   init()
 
-  // Need to handle the case where we have more than a single token on a serviceInstance
+  // Note(mridul, 2018-05-18): Need to handle the case where we have more than a single token on a serviceInstance
+  // Note(mridul, 2018-05-26): Change these vals to private and ensure they are visible to tests.
   val tokensToBeReplicated: mutable.Set[Token] = mutable.Set[Token]().empty
   val mappedTokens: mutable.Map[Token, ReplicatorKafkaIntermediate] = mutable.Map[Token, ReplicatorKafkaIntermediate]().empty
 
-  private def execute1() = {
+  private def tokensReplicationTask() = {
     val allowedTokens = this.synchronized {
       val tokens = tokensToBeReplicated.toSet -- mappedTokens.keys.toSet
       tokensToBeReplicated.clear()
@@ -48,7 +48,7 @@ class SimpleReplicatorReader(connectionConfig: ConnectionConfig,
     snapshotMetadataInformation.metadata.getOrElse(token, SnapshotMetadata())
   }
 
-  private def executeTask(): Unit = {
+  private def snapshotTask(): Unit = {
     mappedTokens.foreach(entry => {
       val snapshotMetadata = entry._2.takeSnapshot()
       zookeeperSnapshotMetadataStore.withLock({
@@ -60,8 +60,9 @@ class SimpleReplicatorReader(connectionConfig: ConnectionConfig,
   }
 
   private def init() = {
-    start(execute1, 2 * 1000)
-    start(executeTask, 2 * 60 * 60 * 1000)
+    // Make this time controllable via UTs as well , so that they dont have to wait for a long time
+    start(tokensReplicationTask, 2 * 1000)
+    start(snapshotTask, 2 * 60 * 60 * 1000)
   }
 
   override def doStart(): Unit = {
@@ -91,14 +92,13 @@ class SimpleReplicatorReader(connectionConfig: ConnectionConfig,
     }
   }
 
-  private def startReplicationForToken(token: Token, snapshotMetadata: SnapshotMetadata) = {
-    require(replicatorClient != null, "Replicator Has to be Initialized for the replication to start")
-    new ReplicatorKafkaIntermediate(token, replicatorClient, snapshotMetadata, connectionConfig.kafkaConfig)
+  private def startReplicationForToken(token: Token, snapshotMetadata: SnapshotMetadata): ReplicatorKafkaIntermediate = {
+    replicatorKafkaIntermediateFactory.createReplicatorKafkaClient(token, snapshotMetadata)
   }
 
-  def setClientState(state: ClientState, replicatorClient: ReplicatorClient): Unit = {
+  def setClientState(state: ClientState, replicatorKafkaIntermediateFactory: ReplicatorKafkaIntermediateFactory): Unit = {
     clientState = state
-    this.replicatorClient = replicatorClient
+    this.replicatorKafkaIntermediateFactory = replicatorKafkaIntermediateFactory
   }
 }
 

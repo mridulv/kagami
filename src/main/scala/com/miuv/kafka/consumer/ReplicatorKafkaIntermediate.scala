@@ -9,7 +9,7 @@ import scala.util.Random
 
 class ReplicatorKafkaIntermediate(token: Token,
                                   replicatorClient: ReplicatorClient,
-                                  snapshotMetadata: SnapshotMetadata,
+                                  val snapshotMetadata: SnapshotMetadata,
                                   kafkaConfig: KafkaConfig)
   extends KafkaConsumer.Subscriber {
 
