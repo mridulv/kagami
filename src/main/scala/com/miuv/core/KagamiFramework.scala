@@ -4,7 +4,7 @@ import com.miuv.config.ConnectionConfig
 import com.miuv.core.partitioner._
 import com.miuv.core.snapshot.{SnapshotMetadataEncoder, ZookeeperSnapshotMetadataStore}
 import com.miuv.curator.{LeaderElection, NodeId}
-import com.miuv.kafka.consumer.{ReplicatorClient, ReplicatorKafkaIntermediateFactory, SimpleReplicatorReader, TokenNotFoundException}
+import com.miuv.kafka.consumer._
 import com.miuv.kafka.producer.SimpleReplicatorWriter
 import com.miuv.util.ClientState
 import org.apache.curator.framework.CuratorFrameworkFactory
@@ -59,10 +59,14 @@ class KagamiFramework(val connectionConfig: ConnectionConfig = ConnectionConfig(
     new SimplePartitioningListener(nodeId, simpleReplicatorReader)
   }
 
+  private val kafkaConsumerFactory: KafkaConsumerFactory = {
+    new KafkaConsumerFactory
+  }
+
   zookeeperPartitioningStore.listen(simplePartitioningListener)
 
-  def startConsumingRequests(replicatorClient: ReplicatorClient): Unit = {
-    val replicatorKafkaIntermediateFactory = new ReplicatorKafkaIntermediateFactory(connectionConfig, replicatorClient)
+  def startConsumingRequests(replicatorClient: KagamiClient): Unit = {
+    val replicatorKafkaIntermediateFactory = new ReplicatorKafkaIntermediateFactory(kafkaConsumerFactory, connectionConfig, replicatorClient)
     simpleReplicatorReader.setClientState(ClientState.Running, replicatorKafkaIntermediateFactory)
   }
 
