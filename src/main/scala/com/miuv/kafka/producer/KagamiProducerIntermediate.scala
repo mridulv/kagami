@@ -1,6 +1,6 @@
 package com.miuv.kafka.producer
 
-class KafkaWriterIntermediate(kafkaProducer: KafkaProducer) extends KafkaProducer.Publisher {
+class KagamiProducerIntermediate(kafkaProducer: KagamiKafkaProducer) extends KagamiKafkaProducer.Publisher {
 
   subscribe(kafkaProducer)
 

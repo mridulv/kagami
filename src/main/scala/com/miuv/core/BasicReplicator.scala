@@ -2,11 +2,11 @@ package com.miuv.core
 
 import com.miuv.core.partitioner.Partitioning.{Target, Token}
 import com.miuv.core.partitioner.ZookeeperPartitioningStore
-import com.miuv.kafka.consumer.{ReplicatorClient, TokenNotFoundException}
-import com.miuv.kafka.producer.KafkaWriterIntermediate
+import com.miuv.kafka.consumer.{KagamiClient, TokenNotFoundException}
+import com.miuv.kafka.producer.KagamiProducerIntermediate
 
 trait ReplicatorWriter extends BasicReplicator {
-  def add(token: Token, numReplication: Int): KafkaWriterIntermediate
+  def add(token: Token, numReplication: Int): KagamiProducerIntermediate
 }
 
 trait ReplicatorReader extends BasicReplicator {
