@@ -3,18 +3,20 @@ package com.miuv.kafka.producer
 import java.util.Properties
 
 import com.miuv.kafka.KafkaProducerConfig
+import com.miuv.util.Logging
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.{ProducerConfig, KafkaProducer => Producer}
 import org.apache.kafka.common.serialization.{ByteArraySerializer, LongSerializer, StringSerializer}
 
 import scala.collection.mutable
 
-class KafkaProducer(kafkaProducerConfig: KafkaProducerConfig)
-  extends KafkaProducer.Subscriber {
+class KagamiKafkaProducer(kafkaProducerConfig: KafkaProducerConfig)
+  extends KagamiKafkaProducer.Subscriber
+    with Logging {
 
   private var index = 0
-  private val TOPIC = kafkaProducerConfig.topic //"random1"
-  private val BOOTSTRAP_SERVERS = kafkaProducerConfig.kafkaConnectString //"localhost:9092"
+  private val TOPIC = kafkaProducerConfig.topic
+  private val BOOTSTRAP_SERVERS = kafkaProducerConfig.kafkaConnectString
 
   private val producer = {
     val props = new Properties()
@@ -30,14 +32,14 @@ class KafkaProducer(kafkaProducerConfig: KafkaProducerConfig)
     props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy")
   }
 
-  override def notify(pub: KafkaProducer.Publisher, event: Array[Byte]): Unit = {
+  override def notify(pub: KagamiKafkaProducer.Publisher, event: Array[Byte]): Unit = {
     val record = new ProducerRecord[Long, Array[Byte]](TOPIC, index, event)
     val metadata = producer.send(record).get
-    print("sent record(key=%s value=%s) " + "meta(partition=%d, offset=%d)\n", record.key, record.value, metadata.partition, metadata.offset)
+    info(s"sent record(key=${record.key} value=${record.value}) " + s"meta(partition=${metadata.partition}, offset=${metadata.offset})")
   }
 }
 
-object KafkaProducer {
+object KagamiKafkaProducer {
   type Publisher = mutable.Publisher[Array[Byte]]
   type Subscriber = mutable.Subscriber[Array[Byte], Publisher]
 }
