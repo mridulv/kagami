@@ -1,18 +1,20 @@
-package com.miuv.core.partitioner
+package com.miuv.core.snapshot
 
 import com.miuv.core.partitioner.Partitioning.Token
-import com.miuv.core.snapshot.{SnapshotMetadata, SnapshotMetadataEncoder, SnapshotMetadataInformation}
+import org.junit.runner.RunWith
+import org.scalatest._
+import org.scalatest.junit.JUnitRunner
 
 import scala.collection.mutable
-import org.scalatest._
 
+@RunWith(classOf[JUnitRunner])
 class SnapshotMetadataEncoderTest extends FlatSpec {
   val snapshotMetadataEncoder = new SnapshotMetadataEncoder
   val tokens = Seq("token1", "token2", "token3")
   val snapshotMetada = mutable.Map(
-    tokens(0) -> SnapshotMetadata(Some("1"), 1, Some("con1")),
-    tokens(1) -> SnapshotMetadata(Some("2"), 1, Some("con2")),
-    tokens(2) -> SnapshotMetadata(Some("3"), 1, Some("con3"))
+    tokens(0) -> SnapshotMetadata(Some("1"), Some(ConsumerInfo("con1", 0, 0L))),
+    tokens(1) -> SnapshotMetadata(Some("2"), Some(ConsumerInfo("con2", 0, 0L))),
+    tokens(2) -> SnapshotMetadata(Some("3"), Some(ConsumerInfo("con3", 0, 0L)))
   )
   val emptySnapshotMetadataInformation: mutable.Map[Token, SnapshotMetadata] = mutable.Map[Token, SnapshotMetadata]().empty
 
@@ -20,7 +22,7 @@ class SnapshotMetadataEncoderTest extends FlatSpec {
     val snapshotMetadataInformation = new SnapshotMetadataInformation(snapshotMetada)
     val finalSnapshotMetadataInformation = snapshotMetadataEncoder.deserialize(snapshotMetadataEncoder.serialize(snapshotMetadataInformation)).metadata
     assert(finalSnapshotMetadataInformation.keys.toSeq.sorted == tokens)
-    assert(finalSnapshotMetadataInformation.values.map(_.offset).toSet == Set(1))
+    assert(finalSnapshotMetadataInformation.values.flatten(_.consumerInfoOpt.map(_.offset)).toSet == Set(0))
     assert(finalSnapshotMetadataInformation.values.flatten(_.path).toSeq.sorted == Seq("1", "2", "3"))
   }
 
