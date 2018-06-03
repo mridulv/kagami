@@ -18,8 +18,8 @@ class SimplePartitioningEncoder extends Encoder[Partitioning] {
       val secondaryTargets = metadata.secondaryTargets.map(_.asInstanceOf[CharSequence]).toList.asJava
       AvroTokenMetadata.newBuilder()
         .setPrimarytarget(metadata.primaryTarget.orNull)
+        .setTopic(metadata.topic)
         .setReplication(metadata.replication)
-        .setSnapshottarget(metadata.snapshotReplica.orNull)
         .setSecondaryTargets(secondaryTargets)
         .build()
     }).toList
@@ -46,14 +46,14 @@ class SimplePartitioningEncoder extends Encoder[Partitioning] {
     val tokens = avroPartitioning.getTokens.asScala.toList.map(_.toString)
     val tokenMetadatas = avroPartitioning.getTokenMetadatas.asScala.toList.map(tokenMetadata => {
       val replication = tokenMetadata.getReplication
+      val topic = tokenMetadata.getTopic
       val primaryTarget = tokenMetadata.getPrimarytarget
-      val snapshotReplica = tokenMetadata.getSnapshottarget
       val secondaryTargets = tokenMetadata.getSecondaryTargets
 
       TokenMetadata(
         replication,
+        topic.toString,
         Option(primaryTarget).map(_.toString),
-        Option(snapshotReplica).map(_.toString),
         secondaryTargets.asScala.toArray.map(_.toString)
       )
     })

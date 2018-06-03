@@ -9,11 +9,11 @@
             "type": "int"
         },
         {
-            "name": "primarytarget",
-            "type": ["string", "null"]
+            "name": "topic",
+            "type": "string"
         },
         {
-            "name": "snapshottarget",
+            "name": "primarytarget",
             "type": ["string", "null"]
         },
         {
