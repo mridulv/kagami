@@ -17,10 +17,17 @@ class SnapshotMetadataEncoder extends Encoder[SnapshotMetadataInformation] {
     val snapshotMetadataMapping = snapshotMetadataInformation.metadata
     val keys = snapshotMetadataMapping.keys.map(_.asInstanceOf[CharSequence]).toList.asJava
     val metadatas = snapshotMetadataMapping.values.map(metadata => {
+      val offset = metadata.consumerInfoOpt.map(consumerInfo => long2Long(consumerInfo.offset))
+      val consumerGroup = metadata.consumerInfoOpt.map(_.consumerGroup)
+      val partition = metadata.consumerInfoOpt.map(_.partition).map(int2Integer)
+      val consumerInfo = AvroConsumerInfo.newBuilder()
+        .setConsumer(consumerGroup.orNull)
+        .setOffset(offset.orNull)
+        .setPartition(partition.orNull)
+        .build()
       AvroSnapshotMetadata.newBuilder()
         .setPath(metadata.path.orNull)
-        .setConsumer(metadata.consumer.orNull)
-        .setOffset(metadata.offset)
+        .setConsumerInfo(consumerInfo)
         .build()
     }).toList
     val avroPartitioning = AvroSnapshotMetadataMapping.newBuilder()
@@ -46,10 +53,13 @@ class SnapshotMetadataEncoder extends Encoder[SnapshotMetadataInformation] {
     val tokens = avroSnapshotMetadataMapping.getTokens.asScala.toList.map(_.toString)
     val snapshotMetadata = avroSnapshotMetadataMapping.getSnapshotMetadata.asScala.toList.map(snapshotMetadata => {
       val path = Option(snapshotMetadata.getPath).map(_.toString)
-      val consumer = Option(snapshotMetadata.getConsumer).map(_.toString)
-      val offset = snapshotMetadata.getOffset
-
-      SnapshotMetadata(path, offset, consumer)
+      val consumerInfo = Option(snapshotMetadata.getConsumerInfo).map(avroConsumerInfo => {
+        val offset = avroConsumerInfo.getOffset
+        val consumerGroup = avroConsumerInfo.getConsumer.toString
+        val partition = avroConsumerInfo.getPartition
+        ConsumerInfo(consumerGroup, partition, offset)
+      })
+      SnapshotMetadata(path, consumerInfo)
     })
     new SnapshotMetadataInformation(collection.mutable.Map(tokens.zip(snapshotMetadata): _*))
   }

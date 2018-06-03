@@ -2,19 +2,34 @@
 {
     "namespace": "com.miuv.core.snapshot",
     "type": "record",
-    "name": "AvroSnapshotMetadata",
+    "name": "AvroConsumerInfo",
     "fields": [
         {
             "name": "offset",
             "type": "long"
         },
         {
+            "name": "partition",
+            "type": "int"
+        },
+        {
+            "name": "consumer",
+            "type": "string"
+        }
+    ]
+},
+{
+    "namespace": "com.miuv.core.snapshot",
+    "type": "record",
+    "name": "AvroSnapshotMetadata",
+    "fields": [
+        {
             "name": "path",
             "type": ["string", "null"]
         },
         {
-            "name": "consumer",
-            "type": ["string", "null"]
+            "name": "consumerInfo",
+            "type": ["com.miuv.core.snapshot.AvroConsumerInfo", "null"]
         }
     ]
 },
