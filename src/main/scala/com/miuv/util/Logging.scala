@@ -9,15 +9,15 @@ trait Logging {
   }
 
   def info(log: String): Unit = {
-    print(s"INFO $now" + log)
+    println(s"INFO $now ${Thread.currentThread().getId} and ${this.getClass.toString} " + log)
   }
 
   def warn(log: String): Unit = {
-    print(s"WARN $now" + log)
+    println(s"WARN $now " + log)
   }
 
   def error(log: String): Unit = {
-    print(s"ERROR $now" + log)
+    println(s"ERROR $now " + log)
   }
 
 }
