@@ -1,18 +1,17 @@
 package com.miuv.kafka.consumer
 
-import com.miuv.config.ConnectionConfig
 import com.miuv.core.partitioner.Partitioning.Token
 import com.miuv.core.partitioner.ZookeeperPartitioningStore
 import com.miuv.core.ReplicatorReader
 import com.miuv.core.snapshot.{SnapshotMetadata, ZookeeperSnapshotMetadataStore}
-import com.miuv.util.{ClientState, StartStoppable}
+import com.miuv.util.{ClientState, Logging, StartStoppable}
 import com.miuv.util.ClientState.ClientState
 
 import scala.collection.mutable
 
 class SimpleReplicatorReader(val zookeeperPartitioningStore: ZookeeperPartitioningStore,
                              val zookeeperSnapshotMetadataStore: ZookeeperSnapshotMetadataStore)
-  extends ReplicatorReader with StartStoppable {
+  extends ReplicatorReader with StartStoppable with Logging {
 
   private var continue: Boolean = true
   private var clientState: ClientState = ClientState.NotStarted
@@ -23,7 +22,7 @@ class SimpleReplicatorReader(val zookeeperPartitioningStore: ZookeeperPartitioni
   // Note(mridul, 2018-05-18): Need to handle the case where we have more than a single token on a serviceInstance
   // Note(mridul, 2018-05-26): Change these vals to private and ensure they are visible to tests.
   val tokensToBeReplicated: mutable.Set[Token] = mutable.Set[Token]().empty
-  val mappedTokens: mutable.Map[Token, ReplicatorKafkaIntermediate] = mutable.Map[Token, ReplicatorKafkaIntermediate]().empty
+  val mappedTokens: mutable.Map[Token, KagamiClientIntermediate] = mutable.Map[Token, KagamiClientIntermediate]().empty
 
   private def tokensReplicationTask() = {
     val allowedTokens = this.synchronized {
@@ -62,7 +61,7 @@ class SimpleReplicatorReader(val zookeeperPartitioningStore: ZookeeperPartitioni
   private def init() = {
     // Make this time controllable via UTs as well , so that they dont have to wait for a long time
     start(tokensReplicationTask, 2 * 1000)
-    start(snapshotTask, 2 * 60 * 60 * 1000)
+    start(snapshotTask, 30 * 1000)
   }
 
   override def doStart(): Unit = {
@@ -79,20 +78,22 @@ class SimpleReplicatorReader(val zookeeperPartitioningStore: ZookeeperPartitioni
         while(continue) {
           if (clientState == ClientState.Running) {
             fn()
-            Thread.sleep(timePeriod)
           }
+          //info(s"We are sleeping here for ${timePeriod}")
+          Thread.sleep(timePeriod)
         }
       }
     }).start()
   }
 
   def updateTokensForReplication(tokens: Seq[Token]): Unit = {
+    info(s"We are getting following tokens: ${tokens.mkString(".")}")
     this.synchronized {
       tokens.foreach(tokensToBeReplicated.add)
     }
   }
 
-  private def startReplicationForToken(token: Token, snapshotMetadata: SnapshotMetadata): ReplicatorKafkaIntermediate = {
+  private def startReplicationForToken(token: Token, snapshotMetadata: SnapshotMetadata): KagamiClientIntermediate = {
     replicatorKafkaIntermediateFactory.createReplicatorKafkaClient(token, snapshotMetadata)
   }
 
