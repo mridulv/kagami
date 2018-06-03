@@ -30,7 +30,6 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
 
   override def replicateRequest(token: Token, request: String): Unit = {
     map.synchronized {
-      info(s"Going to add the entry for $token: the content $request")
       map.put(token, mutable.Map[String, Int]())
       val tokenMap = map(token)
       val tokenMapValue = tokenMap.getOrElse(request, 0)

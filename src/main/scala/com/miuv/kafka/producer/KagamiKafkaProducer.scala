@@ -35,7 +35,7 @@ class KagamiKafkaProducer(kafkaProducerConfig: KafkaProducerConfig)
   override def notify(pub: KagamiKafkaProducer.Publisher, event: Array[Byte]): Unit = {
     val record = new ProducerRecord[Long, Array[Byte]](TOPIC, index, event)
     val metadata = producer.send(record).get
-    info(s"sent record(key=${record.key} value=${record.value}) " + s"meta(partition=${metadata.partition}, offset=${metadata.offset})")
+    info(s"sent record(key=${record.key} value=${new String(record.value)}) " + s"meta(partition=${metadata.partition}, offset=${metadata.offset})")
   }
 }
 

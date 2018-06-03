@@ -19,7 +19,7 @@ trait ZookeeperLockUtil extends Logging {
         fn
       } catch {
         case e: Exception => {
-          error(e.getMessage)
+          error("Lock Acquire Failed with " + e.getMessage)
           throw e
         }
       } finally {
