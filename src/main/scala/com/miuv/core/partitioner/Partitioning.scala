@@ -9,11 +9,17 @@ class Partitioning(val partitioning: mutable.Map[Token, TokenMetadata] = mutable
   def addToken(token: Token, tokenMetadata: TokenMetadata): Unit = {
     partitioning.get(token) match {
       case Some(metadata) => {
-        val data = TokenMetadata(tokenMetadata.replication, tokenMetadata.primaryTarget, metadata.secondaryTargets.headOption, metadata.secondaryTargets)
+        val data = TokenMetadata(tokenMetadata.replication, tokenMetadata.topic, tokenMetadata.primaryTarget, metadata.secondaryTargets)
         partitioning.put(token, data)
       }
       case None => partitioning.put(token, tokenMetadata)
     }
+  }
+
+  override def toString: String = {
+    val keys = partitioning.keys
+    val values = partitioning.values
+    keys.mkString(",") + "------" + values.mkString(",")
   }
 
   def removeTargetFromPartitioning(target: Target): Unit = {
@@ -27,12 +33,8 @@ class Partitioning(val partitioning: mutable.Map[Token, TokenMetadata] = mutable
       }
       val secondaryTargets = metadata.secondaryTargets.toSet
       val replicaTargets = (secondaryTargets - target).toArray
-      val snapshotReplica = if (metadata.snapshotReplica.contains(target) || metadata.snapshotReplica.isEmpty) {
-        replicaTargets.headOption
-      } else {
-        metadata.snapshotReplica
-      }
-      val updatedMetadata = TokenMetadata(metadata.replication, primaryTarget, snapshotReplica, replicaTargets)
+      val topic = metadata.topic
+      val updatedMetadata = TokenMetadata(metadata.replication, topic, primaryTarget, replicaTargets)
       partitioning.put(token, updatedMetadata)
     })
   }
@@ -48,17 +50,17 @@ class Partitioning(val partitioning: mutable.Map[Token, TokenMetadata] = mutable
     require(partitioning.get(token).isDefined)
     val metadata = partitioning(token)
     val numReplication = metadata.replication
+    val topic = metadata.topic
     val redefinedSecondaryTargets: Array[String] = metadata.secondaryTargets ++ Array(target)
-    val snapshotReplica = if (metadata.snapshotReplica.isDefined) {
-      metadata.snapshotReplica
-    } else {
-      redefinedSecondaryTargets.headOption
-    }
-    partitioning.put(token, TokenMetadata(numReplication, metadata.primaryTarget, snapshotReplica, redefinedSecondaryTargets))
+    partitioning.put(token, TokenMetadata(numReplication, topic, metadata.primaryTarget, redefinedSecondaryTargets))
   }
 }
 
-case class TokenMetadata(replication: Int, primaryTarget: Option[Target], snapshotReplica: Option[Target], secondaryTargets: Array[Target])
+case class TokenMetadata(replication: Int, topic: String, primaryTarget: Option[Target], secondaryTargets: Array[Target]) {
+  override def toString: Token = {
+    s" [ Replication is: $replication and primaryTarget is: $primaryTarget and topicInfo: $topic and secondaryTargets ${secondaryTargets.mkString(",")} ] "
+  }
+}
 
 object Partitioning {
   type Token = String
