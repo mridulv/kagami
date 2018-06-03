@@ -31,9 +31,9 @@ class SimpleReplicatorReader(val zookeeperPartitioningStore: ZookeeperPartitioni
       tokens
     }
     val tokensWithKafkaIntermediates = allowedTokens.zip(allowedTokens.map(token => {
-      val replicatorKafkaIntermediate = startReplicationForToken(token, getSnapshotInformation(token))
-      replicatorKafkaIntermediate.setup()
-      replicatorKafkaIntermediate
+      val kagamiClientIntermediate = startReplicationForToken(token, getSnapshotInformation(token))
+      kagamiClientIntermediate.setup()
+      kagamiClientIntermediate
     }))
     this.synchronized {
       tokensWithKafkaIntermediates.foreach(tokensWithKafkaIntermediate => {
@@ -49,12 +49,16 @@ class SimpleReplicatorReader(val zookeeperPartitioningStore: ZookeeperPartitioni
 
   private def snapshotTask(): Unit = {
     mappedTokens.foreach(entry => {
-      val snapshotMetadata = entry._2.takeSnapshot()
-      zookeeperSnapshotMetadataStore.withLock({
-        val metadata = zookeeperSnapshotMetadataStore.load()
-        metadata.addTokenMetadata(entry._1, snapshotMetadata)
-        zookeeperSnapshotMetadataStore.store(metadata)
-      })
+      snapshotForToken(entry._1, entry._2)
+    })
+  }
+
+  private def snapshotForToken(token: Token, kagamiClientIntermediate: KagamiClientIntermediate) = {
+    val snapshotMetadata = kagamiClientIntermediate.takeSnapshot()
+    zookeeperSnapshotMetadataStore.withLock({
+      val metadata = zookeeperSnapshotMetadataStore.load()
+      metadata.addTokenMetadata(token, snapshotMetadata)
+      zookeeperSnapshotMetadataStore.store(metadata)
     })
   }
 
