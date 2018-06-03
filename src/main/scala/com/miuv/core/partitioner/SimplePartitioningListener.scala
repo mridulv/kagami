@@ -3,17 +3,19 @@ package com.miuv.core.partitioner
 import com.miuv.core.partitioner.Partitioning.Token
 import com.miuv.curator.NodeId
 import com.miuv.kafka.consumer.SimpleReplicatorReader
+import com.miuv.util.Logging
 
 import scala.collection.mutable
 
 class SimplePartitioningListener(nodeId: NodeId,
                                  simpleReplicatorReader: SimpleReplicatorReader)
-  extends PartitioningListener {
+  extends PartitioningListener with Logging {
 
   val snapShotForTokens: mutable.Set[Token] = mutable.Set[Token]().empty
   val tokensAlreadyPresent: mutable.Set[Token] = mutable.Set[Token]().empty
 
   override def notifyListener(partitioning: Partitioning): Unit = {
+    info(s"We are getting following tokens: ${partitioning.toString}")
     this.synchronized {
       val tokensMapped = partitioning.inversePartitioning().getOrElse(nodeId.nodeName, Seq[Token]())
       // Note(mridul, 2018-05-26): In this there is an implicit assumption which is wrong though that inverse

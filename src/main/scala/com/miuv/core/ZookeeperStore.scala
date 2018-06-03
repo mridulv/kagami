@@ -18,6 +18,10 @@ trait ZookeeperStore[T] extends Logging {
     cache
   }
 
+  private def getCurrentPartitioning(): String = {
+    encoder.deserialize(curatorFramework.getData.forPath(path)).toString
+  }
+
   def store(entry: T): Unit = {
     val encoded: Array[Byte] = encoder.serialize(entry)
     if (noPartitioningExists()) {
@@ -29,20 +33,25 @@ trait ZookeeperStore[T] extends Logging {
       curatorFramework.setData()
         .forPath(path, encoded)
     }
+    info(s"Current Partitioning is: ${getCurrentPartitioning()} as expected to: ${encoder.deserialize(encoded)}")
   }
 
   def load(): T = {
+    val a = encoder.serialize(defaultEntry)
     if (noPartitioningExists()) {
       curatorFramework.create()
         .creatingParentsIfNeeded()
         .withMode(CreateMode.PERSISTENT)
-        .forPath(path, encoder.serialize(defaultEntry))
-      info(" No partitioning store found on Zookeeper. Creating an empty partitioning.")
+        .forPath(path)
+      curatorFramework.setData().forPath(path, encoder.serialize(defaultEntry))
     }
+
+    info(s"Current Partitioning is: ${getCurrentPartitioning()}")
 
     val currentData = nodeCache.getCurrentData
     if (Option(currentData).isEmpty) nodeCache.rebuild()
-    val res = encoder.deserialize(nodeCache.getCurrentData.getData)
+    val data = nodeCache.getCurrentData.getData
+    val res = encoder.deserialize(data)
     res
   }
 
