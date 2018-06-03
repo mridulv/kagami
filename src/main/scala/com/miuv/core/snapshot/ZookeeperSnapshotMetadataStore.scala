@@ -13,7 +13,7 @@ class ZookeeperSnapshotMetadataStore(override val curatorFramework: CuratorFrame
     with ZookeeperLockUtil
     with Logging {
 
-  override val path: String = "/snapshot/"
-  override val lockPath: String = path
+  override val path: String = "/snapshot"
+  override val lockPath: String = path + "lock"
   override val defaultEntry: SnapshotMetadataInformation = new SnapshotMetadataInformation()
 }

@@ -22,7 +22,7 @@ class ZookeeperPartitioningStore(override val curatorFramework: CuratorFramework
     })
   }
 
-  override val path: String = "/compressed-partitioning/partitioning"
-  override val lockPath: String = path
+  override val path: String = "/partitioning"
+  override val lockPath: String = path + "lock"
   override val defaultEntry: Partitioning = new Partitioning()
 }
