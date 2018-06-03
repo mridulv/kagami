@@ -1,10 +1,11 @@
 package com.miuv.examples
 
 import java.io.{File, FileOutputStream}
+
+import com.miuv.util.StringUtils
 import org.apache.commons.io.FileUtils
 
 import scala.collection.mutable
-import scala.util.Random
 
 object SerDeserSnapshot {
   type Snapshot = mutable.Map[String, Int]
@@ -15,7 +16,7 @@ object SerDeserSnapshot {
   val targetsSep = ";"
 
   def addEntry(snapshot: Snapshot): String = {
-    val name = Random.alphanumeric(10).toString
+    val name = s"/tmp/${StringUtils.randomString(10).toString}"
     val f = new FileOutputStream(name)
     val keys = snapshot.keys.mkString(sep2)
     val values = snapshot.values.mkString(sep2)

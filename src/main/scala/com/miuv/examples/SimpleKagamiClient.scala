@@ -2,35 +2,36 @@ package com.miuv.examples
 
 import com.miuv.core.KagamiFramework
 import com.miuv.core.partitioner.Partitioning.Token
-import com.miuv.kafka.consumer.ReplicatorClient
-import com.miuv.kafka.producer.{KafkaWriterIntermediate, SimpleReplicatorWriter}
-import com.miuv.util.Logging
+import com.miuv.kafka.consumer.KagamiClient
+import com.miuv.kafka.producer.{KagamiProducerIntermediate, SimpleReplicatorWriter}
+import com.miuv.util.{Logging, StringUtils}
 
 import scala.collection.mutable
-import scala.util.Random
 
-class SimpleKagamiClient(kagamiFramework: KagamiFramework) extends ReplicatorClient(kagamiFramework) with Logging {
+class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) extends KagamiClient(kagamiFramework) with Logging {
 
   type T = String
 
   val kagamiWriter: SimpleReplicatorWriter = kagamiFramework.startWriting()
-  val kafkaWriterIntermediate: KafkaWriterIntermediate = kagamiWriter.add("token1", 1)
+  val kafkaWriterIntermediate: KagamiProducerIntermediate = kagamiWriter.add(clientToken, 1)
 
   new Thread(new Runnable {
     override def run(): Unit = {
-      val str = Random.alphanumeric(2).toString
-      val content = str.map(_.toByte).toArray
-      makeRequest("token1", str)
-      info(s"Would replicate the token1 for the content ${str}")
-      kafkaWriterIntermediate.replicateEntry(content)
+      while (true) {
+        val str = StringUtils.randomString(5)
+        val content = str.map(_.toByte).toArray
+        replicateRequest(clientToken, str)
+        kafkaWriterIntermediate.replicateEntry(content)
+        Thread.sleep(2000)
+      }
     }
   }).start()
 
   var map: mutable.Map[Token, mutable.Map[String, Int]] = mutable.Map[Token, mutable.Map[String, Int]]()
 
-  override def makeRequest(token: Token, request: String): Unit = {
+  override def replicateRequest(token: Token, request: String): Unit = {
     map.synchronized {
-      info(s"We are going to replicate the token1 for the content ${request}")
+      info(s"Going to add the entry for $token: the content $request")
       map.put(token, mutable.Map[String, Int]())
       val tokenMap = map(token)
       val tokenMapValue = tokenMap.getOrElse(request, 0)
