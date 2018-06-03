@@ -2,7 +2,7 @@ package com.miuv.core
 
 import com.miuv.core.partitioner.Partitioning.{Target, Token}
 import com.miuv.core.partitioner.ZookeeperPartitioningStore
-import com.miuv.kafka.consumer.{KagamiClient, TokenNotFoundException}
+import com.miuv.kafka.consumer.TokenNotFoundException
 import com.miuv.kafka.producer.KagamiProducerIntermediate
 
 trait ReplicatorWriter extends BasicReplicator {
