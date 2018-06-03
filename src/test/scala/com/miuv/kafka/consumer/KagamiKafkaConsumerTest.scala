@@ -1,6 +1,7 @@
 package com.miuv.kafka.consumer
 
 import com.miuv.config.KafkaConfig
+import com.miuv.core.KagamiClient
 import com.miuv.core.snapshot.SnapshotMetadata
 import com.miuv.kafka.consumer._
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer, OffsetAndMetadata}

@@ -1,8 +1,7 @@
 package com.miuv.examples
 
-import com.miuv.core.KagamiFramework
+import com.miuv.core.{KagamiClient, KagamiFramework}
 import com.miuv.core.partitioner.Partitioning.Token
-import com.miuv.kafka.consumer.KagamiClient
 import com.miuv.kafka.producer.{KagamiProducerIntermediate, SimpleReplicatorWriter}
 import com.miuv.util.{Logging, StringUtils}
 

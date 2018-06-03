@@ -1,6 +1,7 @@
 package com.miuv.kafka.consumer
 
 import com.miuv.config.ConnectionConfig
+import com.miuv.core.KagamiClient
 import com.miuv.core.partitioner.Partitioning.Token
 import com.miuv.core.partitioner.ZookeeperPartitioningStore
 import com.miuv.core.snapshot.{ConsumerInfo, SnapshotMetadata, SnapshotMetadataInformation, ZookeeperSnapshotMetadataStore}

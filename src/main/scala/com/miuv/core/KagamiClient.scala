@@ -1,14 +1,9 @@
-package com.miuv.kafka.consumer
+package com.miuv.core
 
-import com.miuv.core.KagamiFramework
 import com.miuv.core.partitioner.Partitioning.Token
+import com.miuv.core.snapshot.Snapshotter
 
-trait Snapshotter {
-  def takeSnapshot(token: Token): String
-  def loadSnapshot(token: Token, path: String): Unit
-}
-
-// Revisit whether it should be a trait or an abstract class
+// Every ServiceInstance has to implement this Client for getting replication requests
 abstract class KagamiClient(kagamiFramework: KagamiFramework) extends Snapshotter {
 
   type T
