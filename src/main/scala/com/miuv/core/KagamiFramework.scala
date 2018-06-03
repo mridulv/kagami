@@ -20,6 +20,7 @@ class KagamiFramework(val connectionConfig: ConnectionConfig = ConnectionConfig(
     val curatorFramework = CuratorFrameworkFactory.builder
       .connectString(connectionConfig.zookeeperConfig.zookeeperConnectionString)
       .namespace("kagami")
+      .sessionTimeoutMs(connectionConfig.zookeeperConfig.connectionTimeout)
       .retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))
       .connectionTimeoutMs(connectionConfig.zookeeperConfig.connectionTimeout)
       .build()
