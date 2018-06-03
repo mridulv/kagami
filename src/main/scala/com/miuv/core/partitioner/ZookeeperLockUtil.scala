@@ -1,19 +1,31 @@
 package com.miuv.core.partitioner
 
-import org.apache.curator.framework.CuratorFramework
-import org.apache.curator.framework.recipes.locks.InterProcessMutex
+import java.util.concurrent.TimeUnit
 
-trait ZookeeperLockUtil {
+import com.miuv.util.Logging
+import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.recipes.locks.{InterProcessMutex, InterProcessSemaphoreMutex}
+
+trait ZookeeperLockUtil extends Logging {
 
   val curatorFramework: CuratorFramework
   val lockPath: String
-  lazy val lock = new InterProcessMutex(curatorFramework, lockPath)
+  lazy val lock = new InterProcessSemaphoreMutex(curatorFramework, lockPath)
 
   def withLock[T](fn: => T): T = {
-    lock.acquire()
-    val ret = fn
-    lock.release()
-    ret
+    this.synchronized {
+      lock.acquire(10000, TimeUnit.MILLISECONDS)
+      try {
+        fn
+      } catch {
+        case e: Exception => {
+          error(e.getMessage)
+          throw e
+        }
+      } finally {
+        lock.release()
+      }
+    }
   }
 
 }
