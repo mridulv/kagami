@@ -9,10 +9,10 @@ trait Snapshotter {
 }
 
 // Revisit whether it should be a trait or an abstract class
-abstract class ReplicatorClient(kagamiFramework: KagamiFramework) extends Snapshotter {
+abstract class KagamiClient(kagamiFramework: KagamiFramework) extends Snapshotter {
 
   type T
   kagamiFramework.startConsumingRequests(this)
-  def makeRequest(token: Token, request: T)
+  def replicateRequest(token: Token, request: T)
   def deserializeRequest(token: Token, request: Array[Byte]): T
 }
