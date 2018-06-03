@@ -3,6 +3,7 @@ package com.miuv.kafka.consumer
 import scala.collection.JavaConverters._
 import com.miuv.kafka.KafkaConsumerConfig
 import com.miuv.util.{Logging, StartStoppable}
+import org.apache.kafka.common.TopicPartition
 
 import scala.collection.mutable
 
@@ -26,32 +27,48 @@ class KagamiKafkaConsumer(kafkaConsumerFactory: KafkaConsumerFactory,
   def runConsumer(): Unit = {
     val consumer = kafkaBasicConsumer
     var noRecordsCount = 0
+    var elemsRead = 0
+    var alreadySet = false
     while (continue) {
+      val assignments = consumer.assignment()
+      if (!alreadySet && assignments.asScala.nonEmpty) {
+        val topic = kafkaConsumerConfig.topic
+        consumer.seekToBeginning(assignments)
+        kafkaConsumerConfig.kafkaPartitionConfig.foreach(consumerInfo => {
+          info(s"Initializing Consumer with Topic $topic and partition ${consumerInfo.partition} and offset ${consumerInfo.offset} and ${consumer.assignment().asScala.map(_.partition())}")
+          consumer.seek(new TopicPartition(topic, consumerInfo.partition), consumerInfo.offset)
+        })
+        alreadySet = true
+      }
       val consumerRecords = consumer.poll(1000)
-      if (consumerRecords.count == 0) {
+      if (consumerRecords.count == 0 || assignments.asScala.isEmpty) {
         noRecordsCount += 1
       } else {
         val records = consumerRecords.iterator()
         while(records.hasNext) {
           val singleRecord = records.next()
-          println(s"We are reading and publishing bytes for token ${kafkaConsumerConfig.topic} and ${lastCommittedOffset} and ${singleRecord.key()} and ${singleRecord.value()}")
+          elemsRead += 1
+          println(s"We are reading and publishing bytes for token ${kafkaConsumerConfig.topic} " +
+            s"${consumer.position(assignments.asScala.head)} and ${consumer} and ${singleRecord.key()} and ${new String(singleRecord.value())}")
+          consumer.commitSync()
           publish(singleRecord.value())
         }
-        reinitializeOffsetAndPartition()
-        consumer.commitSync()
+        reinitializeOffsetAndPartition(assignments.asScala.toSet)
       }
     }
     consumer.close()
   }
 
-  private def reinitializeOffsetAndPartition(): Unit = {
+  private def reinitializeOffsetAndPartition(assignments: Set[TopicPartition]): Unit = {
     try {
-      val assignments = kafkaBasicConsumer.assignment()
-      val offsets = kafkaBasicConsumer.committed(assignments.asScala.head)
-      partitionNumber = assignments.asScala.head.partition()
-      lastCommittedOffset = offsets.offset()
+        val offsets = kafkaBasicConsumer.committed(assignments.head)
+        partitionNumber = assignments.head.partition()
+        lastCommittedOffset = offsets.offset()
     } catch {
-      case e: Exception => error(e.getMessage)
+      case e: Exception => {
+        error(s"Reinitialization Failed ${assignments} and ${kafkaBasicConsumer.committed(assignments.head)}" + e.getMessage)
+        lastCommittedOffset = -1
+      }
     }
   }
 

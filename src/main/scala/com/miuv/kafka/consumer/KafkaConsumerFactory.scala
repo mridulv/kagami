@@ -7,6 +7,7 @@ import com.miuv.util.Logging
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, LongDeserializer}
+import scala.collection.JavaConverters._
 
 class KafkaConsumerFactory extends Logging {
 
@@ -16,16 +17,14 @@ class KafkaConsumerFactory extends Logging {
     val topic = kafkaConsumerConfig.topic
     val consumer = new KafkaConsumer[Long, Array[Byte]](props)
     consumer.subscribe(Collections.singletonList(topic))
-    kafkaConsumerConfig.kafkaPartitionConfig.foreach(consumerInfo => {
-      info(s"Initializing Consumer with Topic $topic and partition ${consumerInfo.partition} and offset ${consumerInfo.offset}")
-      consumer.seek(new TopicPartition(topic, consumerInfo.partition), consumerInfo.offset)
-    })
     consumer
   }
 
   private def setupBatchingAndCompression(props: Properties, kafkaConsumerConfig: KafkaConsumerConfig) = {
     val BOOTSTRAP_SERVERS = kafkaConsumerConfig.kafkaConnectString
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
+    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
+    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
     props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConsumerConfig.consumerGroup)
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, classOf[LongDeserializer].getName)
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[ByteArrayDeserializer].getName)
