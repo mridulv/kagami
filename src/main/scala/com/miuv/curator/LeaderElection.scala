@@ -17,8 +17,8 @@ import scala.util.control.NonFatal
 class LeaderElection(curator: CuratorFramework,
                      connectionString: String,
                      nodeId: NodeId,
-                     partitioners: ListBuffer[LeaderPartitioner],
-                     registerMBean: Boolean = true) extends Logging {
+                     partitioners: ListBuffer[LeaderPartitioner])
+  extends Logging {
 
   import LeaderElection._
 
@@ -33,7 +33,7 @@ class LeaderElection(curator: CuratorFramework,
 
   private val childrenUpdateLock = new Object
   private var zkChildPath: String = null
-  @volatile private var running: Boolean = false
+  @volatile private var running: Boolean = true
 
   var currentLeader: String = null
   var electionCandidateCount: Int = 0
@@ -181,6 +181,11 @@ class LeaderElection(curator: CuratorFramework,
           stopIfLeader()
         }
         currentLeader = newLeader.baseName
+      } else {
+        if (newLeader.baseName == nodeName) {
+          partitioners.foreach(_.doPartition(sortedChildren.map(_.baseName)))
+          info("We are the leader! Starting to lead.")
+        }
       }
     }
   }
