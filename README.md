@@ -1,2 +1,2 @@
 # kagami
-Library for using Kafka as a commit box
+Library for using Kafka as a commit log
