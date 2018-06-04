@@ -7,11 +7,11 @@ import com.miuv.util.{Logging, StringUtils}
 
 import scala.collection.mutable
 
-class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) extends KagamiClient(kagamiFramework) with Logging {
+class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) extends KagamiClient with Logging {
 
   type T = String
 
-  val kagamiWriter: SimpleReplicatorWriter = kagamiFramework.startWriting()
+  val kagamiWriter: SimpleReplicatorWriter = kagamiFramework.init(this)
   val kafkaWriterIntermediate: KagamiProducerIntermediate = kagamiWriter.add(clientToken, 1)
 
   new Thread(new Runnable {

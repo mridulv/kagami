@@ -66,13 +66,18 @@ class KagamiFramework(val connectionConfig: ConnectionConfig = ConnectionConfig(
 
   zookeeperPartitioningStore.listen(simplePartitioningListener)
 
-  def startConsumingRequests(replicatorClient: KagamiClient): Unit = {
+  private def startConsumingRequests(replicatorClient: KagamiClient): Unit = {
     val replicatorKafkaIntermediateFactory = new ReplicatorKafkaIntermediateFactory(kafkaConsumerFactory, connectionConfig, replicatorClient)
     simpleReplicatorReader.setClientState(ClientState.Running, replicatorKafkaIntermediateFactory)
   }
 
-  def startWriting(): SimpleReplicatorWriter = {
+  private def startWriting(): SimpleReplicatorWriter = {
     new SimpleReplicatorWriter(tokenAssigner, nodeId, zookeeperPartitioningStore)
+  }
+
+  def init(kagamiClient: KagamiClient): SimpleReplicatorWriter = {
+    startConsumingRequests(kagamiClient)
+    startWriting()
   }
 
 }
