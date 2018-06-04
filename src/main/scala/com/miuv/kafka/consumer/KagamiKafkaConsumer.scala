@@ -16,6 +16,7 @@ class KagamiKafkaConsumer(kafkaConsumerFactory: KafkaConsumerFactory,
   subscribe(replicatorKafkaIntermediate)
 
   private var continue = true
+  private var alreadySet = false
 
   var lastCommittedOffset: Long = 0L
   var partitionNumber: Int = 0
@@ -28,20 +29,10 @@ class KagamiKafkaConsumer(kafkaConsumerFactory: KafkaConsumerFactory,
     val consumer = kafkaBasicConsumer
     var noRecordsCount = 0
     var elemsRead = 0
-    var alreadySet = false
     while (continue) {
-      val assignments = consumer.assignment()
-      if (!alreadySet && assignments.asScala.nonEmpty) {
-        val topic = kafkaConsumerConfig.topic
-        consumer.seekToBeginning(assignments)
-        kafkaConsumerConfig.kafkaPartitionConfig.foreach(consumerInfo => {
-          info(s"Initializing Consumer with Topic $topic and partition ${consumerInfo.partition} and offset ${consumerInfo.offset} and ${consumer.assignment().asScala.map(_.partition())}")
-          consumer.seek(new TopicPartition(topic, consumerInfo.partition), consumerInfo.offset)
-        })
-        alreadySet = true
-      }
+      val assignments = findPartitionsForConsumer()
       val consumerRecords = consumer.poll(1000)
-      if (consumerRecords.count == 0 || assignments.asScala.isEmpty) {
+      if (consumerRecords.count == 0 || assignments.isEmpty) {
         noRecordsCount += 1
       } else {
         val records = consumerRecords.iterator()
@@ -49,14 +40,28 @@ class KagamiKafkaConsumer(kafkaConsumerFactory: KafkaConsumerFactory,
           val singleRecord = records.next()
           elemsRead += 1
           println(s"We are reading and publishing bytes for token ${kafkaConsumerConfig.topic} " +
-            s"${consumer.position(assignments.asScala.head)} and ${consumer} and ${singleRecord.key()} and ${new String(singleRecord.value())}")
+            s"${consumer.position(assignments.head)} and ${consumer} and ${singleRecord.key()} and ${new String(singleRecord.value())}")
           consumer.commitSync()
           publish(singleRecord.value())
         }
-        reinitializeOffsetAndPartition(assignments.asScala.toSet)
+        reinitializeOffsetAndPartition(assignments)
       }
     }
     consumer.close()
+  }
+
+  private def findPartitionsForConsumer(): Set[TopicPartition] = {
+    val assignments = kafkaBasicConsumer.assignment()
+    if (!alreadySet && assignments.asScala.nonEmpty) {
+      val topic = kafkaConsumerConfig.topic
+      kafkaBasicConsumer.seekToBeginning(assignments)
+      kafkaConsumerConfig.kafkaPartitionConfig.foreach(consumerInfo => {
+        info(s"Initializing Consumer with Topic $topic and partition ${consumerInfo.partition} and offset ${consumerInfo.offset} and ${kafkaBasicConsumer.assignment().asScala.map(_.partition())}")
+        kafkaBasicConsumer.seek(new TopicPartition(topic, consumerInfo.partition), consumerInfo.offset)
+      })
+      alreadySet = true
+    }
+    assignments.asScala.toSet
   }
 
   private def reinitializeOffsetAndPartition(assignments: Set[TopicPartition]): Unit = {
