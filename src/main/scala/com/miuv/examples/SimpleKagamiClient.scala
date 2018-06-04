@@ -21,7 +21,7 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
         val content = str.map(_.toByte).toArray
         replicateRequest(clientToken, str)
         kafkaWriterIntermediate.replicateEntry(content)
-        Thread.sleep(2000)
+        Thread.sleep(5000)
       }
     }
   }).start()
@@ -30,10 +30,18 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
 
   override def replicateRequest(token: Token, request: String): Unit = {
     map.synchronized {
-      map.put(token, mutable.Map[String, Int]())
-      val tokenMap = map(token)
-      val tokenMapValue = tokenMap.getOrElse(request, 0)
-      tokenMap.put(request, tokenMapValue + 1)
+      map.get(token) match {
+        case Some(tokenMap) => {
+          val tokenMapValue = tokenMap.getOrElse(request, 0)
+          tokenMap.put(request, tokenMapValue + 1)
+        }
+        case None => {
+          map.put(token, mutable.Map[String, Int]())
+          val tokenMap = map(token)
+          val tokenMapValue = tokenMap.getOrElse(request, 0)
+          tokenMap.put(request, tokenMapValue + 1)
+        }
+      }
     }
   }
 
@@ -46,7 +54,7 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
     map.get(token) match {
       case None => {
         val value = mutable.Map[String, Int]()
-        val emptyMap = map.put(token, value)
+        map.put(token, value)
         SerDeserSnapshot.addEntry(value)
       }
       case Some(snapshot) => {
