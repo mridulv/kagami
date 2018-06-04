@@ -1,4 +1,7 @@
 # Kagami
+
+[![Build Status](https://travis-ci.org/mridulv/kagami.svg?branch=master)](https://travis-ci.org/mridulv/kagami)
+
 Availability is one of the key concerns for any of the today's microservices. 
 Providing availability in any stateless service is somewhat easy as they don't have any state 
 so services going up and down is not that big of an issue. But for stateful systems, we 
