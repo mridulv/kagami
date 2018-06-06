@@ -3,6 +3,7 @@ package com.miuv.core.snapshot
 import com.miuv.core.partitioner.Partitioning.Token
 
 trait Snapshotter {
-  def takeSnapshot(token: Token): String
-  def loadSnapshot(token: Token, path: String): Unit
+  type Path = String
+  def takeSnapshot(token: Token): Path
+  def loadSnapshot(token: Token, path: Path): Unit
 }

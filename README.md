@@ -31,7 +31,7 @@ java -jar target/kagami-1.0-SNAPSHOT-jar-with-dependencies.jar token2 &
 
 Here is a basic architecture explaining the internals of kagamiFramework
 
-<img src="https://mypersonalmusingsblog.files.wordpress.com/2018/06/blank-diagram-page-1-65-e1528226305526.jpeg"     alt="Overview" style="float: left; margin-right: 10px;" width="700" height="350"/> 
+<img src="https://mypersonalmusingsblog.files.wordpress.com/2018/06/blank-diagram-page-1-66-e1528296740620.jpeg"     alt="Overview" style="float: left; margin-right: 10px;" width="700" height="350"/> 
 
 ### Usage
 
