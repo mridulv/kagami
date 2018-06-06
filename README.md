@@ -2,27 +2,42 @@
 
 [![Build Status](https://travis-ci.org/mridulv/kagami.svg?branch=master)](https://travis-ci.org/mridulv/kagami)
 
-Availability is one of the key concerns for any of the today's microservices. 
-Providing availability in any stateless service is somewhat easy as they don't have any state 
-so services going up and down is not that big of an issue. But for stateful systems, we 
-have to do a lot for providing availability. Replication is one of the solutions 
-used world wide by developers to provide availability for their microservices. But replication is a 
-difficult problem to solve as this involves careful interactions between the replicas and making sure 
-that there is minimal performance impacted at the cost of availability. 
+Availability is one of the key concerns for any of the today's microservices. Providing availability in any stateful service is not straightforward and requires a lot of work. Replication is one of the solutions used world wide by developers to provide availability for their microservices. Getting Replication right is one tough problem as it requires a lot of corner cases handling.
 
-Kagami (*japanese name for mirror*) solves this problem by using kafka as a commit log. Kagami offers 
-a simple interface which needs to be implemented by the developers.   
+Kagami (*japanese name for mirror*) solves this problem by using kafka as a commit log. Kagami offers a very simple interface which needs to be implemented by the developers. After framework is initialized, kagami takes care of replicating the requests/writes from one node to some other node.
 
+Kagami also support iterative snapshotting which is required in cases you snapshot the data every once in a while and upload it to some central storage.
 
-### Installation
+### Requirements
+- Curator Framework >= 2.8 version
+- Kafka >= 1.1.0
 
-You need to have zookeeper and kafka running on your machine
+### Getting Started
+
+You need to have zookeeper ( *localhost:2181* ) and kafka ( *localhost:9092* ) running on your machine
 
 ```
 git clone https://github.com/mridulv/kagami.git
 cd kagami
 mvn package
-java -jar target/kagami-1.0-SNAPSHOT-jar-with-dependencies.jar token1
 ```
 
+```
+java -jar target/kagami-1.0-SNAPSHOT-jar-with-dependencies.jar token1 &
+java -jar target/kagami-1.0-SNAPSHOT-jar-with-dependencies.jar token2 &
+```
 
+### Overview
+
+Here is a basic architecture explaining the internals of kagamiFramework
+
+<img src="https://mypersonalmusingsblog.files.wordpress.com/2018/06/blank-diagram-page-1-65-e1528226305526.jpeg"     alt="Overview" style="float: left; margin-right: 10px;" width="700" height="350"/> 
+
+### Usage
+
+For using this library you just need to implement the **kagamiClient** interface ( see for example **SimpleKagamiClient** ), and the kagami library will make sure that all the subsequent writes which are happening on this node ( for a particular token ) are replicated on another available node.
+
+```
+  def replicateRequest(token: Token, request: T)
+  def deserializeRequest(token: Token, request: Array[Byte]): T
+```
