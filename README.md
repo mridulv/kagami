@@ -5,10 +5,10 @@
 Availability is one of the key concerns for any of today's microservices. Providing availability in any stateful service is not straightforward and requires a lot of work. Replication is one of the solutions used world wide by developers to provide availability for their microservices. But getting Replication right is one tough problem as it requires a lot of corner cases handling.
 
 Kagami (*japanese name for mirror*) solves this problem by using kafka as a commit log. 
-- Kagami offers a very simple interface which needs to be implemented by the developers. 
+- Kagami offers a simple interface which needs to be implemented by the users for receiving replicated data.
 - Kagami takes care of replicating the state/writes from one node to some other node. 
 - Kagami makes sure that these replicas are evenly distributed across nodes.
-- Kagami also support iterative snapshotting which is required in cases of node loss.
+- Kagami also support iterative snapshotting and replica reconstruction required in cases of node loss.
 
 For more details, see [this](https://miuv.blog/2018/04/16/building-replicated-distributed-systems-with-kafka/)
 
