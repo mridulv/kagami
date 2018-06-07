@@ -9,8 +9,6 @@ import scala.collection.mutable
 
 class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) extends KagamiClient with Logging {
 
-  type T = String
-
   val kagamiWriter: SimpleReplicatorWriter = kagamiFramework.init(this)
   val kafkaWriterIntermediate: KagamiProducerIntermediate = kagamiWriter.add(clientToken, 1)
 
@@ -19,8 +17,8 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
       while (true) {
         val str = StringUtils.randomString(5)
         val content = str.map(_.toByte).toArray
-        replicateRequest(clientToken, str)
-        kafkaWriterIntermediate.replicateEntry(content)
+        receiverReplicatedData(clientToken, serialize(str))
+        kafkaWriterIntermediate.sendDataForReplication(content)
         Thread.sleep(5000)
       }
     }
@@ -28,7 +26,8 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
 
   var map: mutable.Map[Token, mutable.Map[String, Int]] = mutable.Map[Token, mutable.Map[String, Int]]()
 
-  override def replicateRequest(token: Token, request: String): Unit = {
+  override def receiverReplicatedData(token: Token, data: Array[Byte]): Unit = {
+    val request = deserialize(data)
     map.synchronized {
       map.get(token) match {
         case Some(tokenMap) => {
@@ -45,8 +44,12 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
     }
   }
 
-  override def deserializeRequest(token: Token, request: Array[Byte]): String = {
-    new String(request)
+  def deserialize(bytes: Array[Byte]): String = {
+    new String(bytes)
+  }
+
+  def serialize(data: String): Array[Byte] = {
+    data.toCharArray.map(_.toByte)
   }
 
   override def takeSnapshot(token: Token): String = {

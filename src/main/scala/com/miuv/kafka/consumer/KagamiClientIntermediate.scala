@@ -50,7 +50,6 @@ class KagamiClientIntermediate(kafkaConsumerFactory: KafkaConsumerFactory,
   }
 
   override def notify(pub: KagamiKafkaConsumer.Publisher, event: Array[Byte]): Unit = {
-    val payload = kagamiClient.deserializeRequest(token, event)
-    kagamiClient.replicateRequest(token, payload)
+    kagamiClient.receiverReplicatedData(token, event)
   }
 }
