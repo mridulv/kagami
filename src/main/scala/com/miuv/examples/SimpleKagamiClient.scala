@@ -17,8 +17,8 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
       while (true) {
         val str = StringUtils.randomString(5)
         val content = str.map(_.toByte).toArray
-        replicateData(clientToken, serialize(str))
-        kafkaWriterIntermediate.replicateEntry(content)
+        receiverReplicatedData(clientToken, serialize(str))
+        kafkaWriterIntermediate.sendDataForReplication(content)
         Thread.sleep(5000)
       }
     }
@@ -26,7 +26,7 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
 
   var map: mutable.Map[Token, mutable.Map[String, Int]] = mutable.Map[Token, mutable.Map[String, Int]]()
 
-  override def replicateData(token: Token, data: Array[Byte]): Unit = {
+  override def receiverReplicatedData(token: Token, data: Array[Byte]): Unit = {
     val request = deserialize(data)
     map.synchronized {
       map.get(token) match {

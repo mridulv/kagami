@@ -4,7 +4,7 @@ class KagamiProducerIntermediate(kafkaProducer: KagamiKafkaProducer) extends Kag
 
   subscribe(kafkaProducer)
 
-  def replicateEntry(content: Array[Byte]): Unit = {
+  def sendDataForReplication(content: Array[Byte]): Unit = {
     publish(content)
   }
 }

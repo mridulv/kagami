@@ -50,6 +50,6 @@ class KagamiClientIntermediate(kafkaConsumerFactory: KafkaConsumerFactory,
   }
 
   override def notify(pub: KagamiKafkaConsumer.Publisher, event: Array[Byte]): Unit = {
-    kagamiClient.replicateData(token, event)
+    kagamiClient.receiverReplicatedData(token, event)
   }
 }
