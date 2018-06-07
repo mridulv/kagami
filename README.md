@@ -42,5 +42,5 @@ Here is a basic architecture explaining the internals of kagamiFramework
 For using this library you just need to implement the **kagamiClient** interface ( see for example **SimpleKagamiClient** ), and the kagami library will make sure that all the subsequent writes which are happening on this node ( for a particular token ) are replicated on another available node.
 
 ```
-  def replicateRequest(token: Token, request: T)
+  def receiverReplicatedData(token: Token, data: Array[Byte])
 ```
