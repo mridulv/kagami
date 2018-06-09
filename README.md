@@ -44,3 +44,5 @@ For using this library you just need to implement the **kagamiClient** interface
 ```
   def receiveReplicatedData(token: Token, data: Array[Byte])
 ```
+
+For example implementation, have a look at [SimpleKagamiClient](https://github.com/mridulv/kagami/blob/master/src/main/scala/com/miuv/examples/SimpleKagamiClient.scala)
