@@ -10,7 +10,7 @@ Kagami (*japanese name for mirror*) solves this problem by using kafka as a comm
 - Kagami makes sure that these replicas are evenly distributed across nodes.
 - Kagami also support iterative snapshotting and replica reconstruction required in cases of node loss.
 
-You can now build distributed available systems by simply plugging Kagami in your application.
+**You can now build distributed available systems by simply plugging Kagami in your application.**
 
 For more details, see [this](https://miuv.blog/2018/04/16/building-replicated-distributed-systems-with-kafka/)
 
