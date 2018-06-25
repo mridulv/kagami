@@ -41,10 +41,13 @@ Here is a basic architecture explaining the internals of kagamiFramework
 
 ### Usage
 
-For using this library you just need to implement the **kagamiClient** interface ( see for example **SimpleKagamiClient** ), and the kagami library will make sure that all the subsequent writes which are happening on this node ( for a particular token ) are replicated on another available node.
+For using this library you just need to add a request listener to kagamiFramework ( see for example **SimpleKagamiClient** ), and the kagami library will make sure that all the writes for the replicas which are assigned to this node are made to this request listener.
 
 ```
-  def receiveReplicatedData(token: Token, data: Array[Byte])
+new KagamiFramework()
+      .addRequestListener(simpleKagamiClient)
+      .init()
 ```
+
 
 For example implementation, have a look at [SimpleKagamiClient](https://github.com/mridulv/kagami/blob/master/src/main/scala/com/miuv/examples/SimpleKagamiClient.scala)
