@@ -75,8 +75,12 @@ class KagamiFramework(val connectionConfig: ConnectionConfig = ConnectionConfig(
     new SimpleReplicatorWriter(tokenAssigner, nodeId, zookeeperPartitioningStore)
   }
 
-  def init(kagamiClient: KagamiClient): SimpleReplicatorWriter = {
+  def addRequestListener(kagamiClient: KagamiClient): KagamiFramework = {
     startConsumingRequests(kagamiClient)
+    this
+  }
+
+  def init(): SimpleReplicatorWriter = {
     startWriting()
   }
 

@@ -1,33 +1,16 @@
 package com.miuv.examples
 
-import com.miuv.core.{KagamiClient, KagamiFramework}
+import com.miuv.core.KagamiClient
 import com.miuv.core.partitioner.Partitioning.Token
-import com.miuv.kafka.producer.{KagamiProducerIntermediate, SimpleReplicatorWriter}
-import com.miuv.util.{Logging, StringUtils}
+import com.miuv.util.Logging
 
 import scala.collection.mutable
 
-class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) extends KagamiClient with Logging {
-
-  val kagamiWriter: SimpleReplicatorWriter = kagamiFramework.init(this)
-  val kafkaWriterIntermediate: KagamiProducerIntermediate = kagamiWriter.add(clientToken, 1)
-
-  new Thread(new Runnable {
-    override def run(): Unit = {
-      while (true) {
-        val str = StringUtils.randomString(5)
-        val content = str.map(_.toByte).toArray
-        receiveReplicatedData(clientToken, serialize(str))
-        kafkaWriterIntermediate.sendDataForReplication(content)
-        Thread.sleep(5000)
-      }
-    }
-  }).start()
+class SimpleKagamiClient extends KagamiClient with Logging {
 
   var map: mutable.Map[Token, mutable.Map[String, Int]] = mutable.Map[Token, mutable.Map[String, Int]]()
 
-  override def receiveReplicatedData(token: Token, data: Array[Byte]): Unit = {
-    val request = deserialize(data)
+  def addEntryToMap(token: Token, request: String): Unit = {
     map.synchronized {
       map.get(token) match {
         case Some(tokenMap) => {
@@ -42,6 +25,11 @@ class SimpleKagamiClient(kagamiFramework: KagamiFramework, clientToken: Token) e
         }
       }
     }
+  }
+
+  override def receiveReplicatedData(token: Token, data: Array[Byte]): Unit = {
+    val request = deserialize(data)
+    addEntryToMap(token, request)
   }
 
   def deserialize(bytes: Array[Byte]): String = {
