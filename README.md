@@ -41,7 +41,7 @@ Here is a basic architecture explaining the internals of kagamiFramework
 
 ### Usage
 
-For using this library you just need to add a request listener to kagamiFramework ( see for example **SimpleKagamiClient** ), and the kagami library will make sure that all the writes for the replicas which are assigned to this node are made to this request listener.
+For using this library you just need to add a request listener to kagamiFramework (see for example **SimpleKagamiClient**), and the kagami library will make sure that all the writes for the replicas which are assigned to this node are made to this request listener.
 
 ```
 new KagamiFramework()
